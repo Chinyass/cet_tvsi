@@ -1,0 +1,17 @@
+{
+  "name": "node_socket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "chinya",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1",
+    "net-snmp": "^3.6.4",
+    "snmp-native": "^1.2.0",
+    "socket.io": "^4.5.1"
+  }
+}
