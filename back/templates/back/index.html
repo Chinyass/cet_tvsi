@@ -17,7 +17,15 @@
         <input id='serial' /><button id='but_send'>send</button>
         <div id="chart"></div>
         <script>
-            
+            function cuba(x){
+                if (!isNaN(x)){
+                    return x * x * x 
+                }
+                else{
+                    return "cubinskie cigary"
+                }
+            }
+            const server_ip = 'localhost'
             Plotly.newPlot('chart', [{
                 y: [0,0,0],
                 fill: 'tozeroy',
@@ -26,7 +34,7 @@
                 line: {color: 'green'}
             }]);
 
-            const socket = io("http://172.16.25.43:3000");
+            const socket = io(`http://${server_ip}:3000`);
             const serial = document.querySelector('#serial')
             const button = document.querySelector('#but_send')
 
@@ -42,23 +50,6 @@
                         y: [[parseInt(data)]]
                     }, [0])
             })
-            
-            
-            
-            /*
-            var cnt = 0;
-            
-            var interval = setInterval(function() {
-                axios.get("http://172.16.25.43:8000/get_traffic_ont").then( res => {
-                    Plotly.extendTraces('chart', {
-                        y: [[parseInt(res.data['rx'])]]
-                    }, [0])
-
-                    if(++cnt === 500) clearInterval(interval);
-                })
-                
-            }, 22000);
-            */
 
         </script>
     </body>

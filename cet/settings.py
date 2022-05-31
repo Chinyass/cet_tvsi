@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'cet.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'cet',
+        'USER': 'django',
+        'PASSWORD': 'q-123456',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 

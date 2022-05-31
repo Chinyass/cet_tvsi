@@ -29,7 +29,6 @@ class mySnmp{
                     }
                     resolve(data)
                 }
-               
             });
         })
     }
@@ -63,8 +62,6 @@ class mySnmp{
         function vlc_snmp(OID) {
             return new Promise((resolve,reject) => {
                 self.session.subtree(OID, 20, feedCb, (error) => {
-                    // This is a wrapper callback on doneCb
-                    // Always call the doneCb
                     doneCb(error);
                     if (error) { 
                         reject(error);
@@ -74,7 +71,7 @@ class mySnmp{
                 });
             });
         }
-
+        
         return await vlc_snmp(OID);
     }
 
