@@ -12,6 +12,7 @@ class OLT(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     ip = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
+    firmware = models.CharField(max_length=100,null=True,blank=True)
     ats = models.ForeignKey(ATS, related_name='olt',on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):
