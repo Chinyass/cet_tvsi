@@ -13,16 +13,23 @@ def get_ats(request):
     if request.method == 'GET':
         return JsonResponse(serializer.get_ats(),safe=False)
 
+@csrf_exempt
 def find_ont(request):
     if request.method == 'POST':
-        ips = json.load(request.body)['ips']
+        res = json.loads(request.body)
+        ips = res['ips']
+        serial = res['serial']
+        
         errors = []
         for ip in ips:
             ltp = LTP(ip,'private_set')
-            data = ltp.find_ont()
+            data = ltp.find_ont(serial)
+            print(data)
             if not data['error']:
+                data['ip'] = ip
                 return JsonResponse([data],safe=False)
             else:
+                data['ip'] = ip
                 errors.append(data)
         
         return JsonResponse(errors,safe=False)

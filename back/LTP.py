@@ -21,14 +21,17 @@ class LTP:
                     'ID' : self.get_ont_id(dec_serial),
                     'MODEL' : self.get_ont_model(dec_serial),
                     'FIRMWARE' : self.get_ont_firmware(dec_serial),
+                    'TEMPLATE' : self.get_ont_template(dec_serial),
                     'OPTICAL_RX' : self.get_ont_optical_rx(dec_serial),
                     'OPTICAL_TX' : self.get_ont_optical_tx(dec_serial),
                     'USER' : self.get_ont_acs_user(dec_serial),
                     'LOGIN' : self.get_ont_acs_login(dec_serial),
                     'PASSWORD' : self.get_ont_acs_password(dec_serial),
+                    'PROFILE' : self.get_ont_acs_profile(dec_serial),
                     'VOIP_ENABLE' : self.get_ont_voip_enable(dec_serial),
                     'VOIP_NUMBER' : self.get_ont_voip_number(dec_serial),
                     'VOIP_PASSWORD' : self.get_ont_voip_password(dec_serial),
+                    'error' : '',
                 }
             else:
                 return {
@@ -41,42 +44,86 @@ class LTP:
             }
 
     def get_ont_voip_password(self,dec_serial):
-        return self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.6.8.{dec_serial}')
+        data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.6.8.{dec_serial}')
+        if data == 'NOSUCHOBJECT':
+            return ''
+        else:
+            return data
+
+    def set_ont_voip_password(self,dec_serial,value):
+        return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.6.8.{dec_serial}',value)
 
     def get_ont_voip_number(self,dec_serial):
-        return self.snmp.get( f'1.3.6.1.4.1.35265.1.22.3.15.1.5.8.{dec_serial}')
+        data = self.snmp.get( f'1.3.6.1.4.1.35265.1.22.3.15.1.5.8.{dec_serial}')
+        if data == 'NOSUCHOBJECT':
+            return ''
+        else:
+            return data
+    def set_ont_voip_number(self,dec_serial,value):
+        return self.snmp.set_string( f'1.3.6.1.4.1.35265.1.22.3.15.1.5.8.{dec_serial}',value)
 
     def get_ont_voip_enable(self,dec_serial):
-        return self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.4.8.{dec_serial}')
+        data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.4.8.{dec_serial}')
+        if data == 'NOSUCHOBJECT':
+            return ''
+        else:
+            return data
+
+    def set_ont_voip_enable(self,dec_serial,value):
+        return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.4.8.{dec_serial}',value)
 
     def get_ont_acs_profile(self,dec_serial):
-        return self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.3.8.{dec_serial}')
+        data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.3.8.{dec_serial}')
+        if data == 'NOSUCHOBJECT':
+            return 'Not created'
+        else:
+            return data
+    
+    def set_ont_acs_profile(self,dec_serial,value):
+        return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.15.1.3.8.{dec_serial}',value)
 
     def get_ont_template(self,dec_serial):
         id = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.4.1.43.1.8.{dec_serial}')
-        return self.snmp.get(f'.1.3.6.1.4.1.35265.1.22.3.24.1.1.2.{id}')
+        data = self.snmp.get(f'.1.3.6.1.4.1.35265.1.22.3.24.1.1.2.{id}')
+        if data == 'NOSUCHINSTANCE':
+            return 'Not created'
+        else:
+            return data
+    
+    def set_ont_template(self,dec_serial,value):
+        return self.snmp.set_unsigned(f'.1.3.6.1.4.1.35265.1.22.3.24.1.1.2.{id}')
 
     def get_ont_acs_password(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.12.8.{dec_serial}')
-        if data == 'No Such Object currently exists at this OID':
+        if data == 'NOSUCHOBJECT':
             return 'Not created'
         else:
             return data
+    
+    def set_ont_acs_password(self,dec_serial,value):
+        return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.12.8.{dec_serial}',value)
 
     def get_ont_acs_login(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.11.8.{dec_serial}')
-        if data == 'No Such Object currently exists at this OID':
+        print(data)
+        if data == 'NOSUCHOBJECT':
             return 'Not created'
         else:
             return data
+    
+    def set_ont_acs_login(self,dec_serial,value):
+        return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.11.8.{dec_serial}',value)
 
     def get_ont_acs_user(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.2.8.{dec_serial}')
-        if data == 'No Such Object currently exists at this OID':
+        if data == 'NOSUCHOBJECT':
             return 'Not created'
         else:
             return data
-        
+    
+    def set_ont_acs_user(self,dec_serial,value):
+        return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.2.8.{dec_serial}',value)
+
     def get_ont_optical_tx(self,dec_serial):
         return self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.1.1.14.1.8.{dec_serial}')
 
@@ -115,12 +162,13 @@ class LTP:
         return '.'.join( list(map(lambda x: str(int(x,16)),r)) )
 
     def get_ont_serial(self,dec_serial):
-        data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.1.1.2.1.8.{dec_serial}')
+        data = self.snmp.get_pysnmp(f'1.3.6.1.4.1.35265.1.22.3.1.1.2.1.8.{dec_serial}')
         return data[2:].upper()
 
     def is_ont_online(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.1.1.2.1.8.{dec_serial}')
-        if 'No' not in data:
+        print(data)
+        if 'NOSUCHINSTANCE' not in data:
             return True
         else:
             return False

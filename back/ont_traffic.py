@@ -8,4 +8,4 @@ ips = [
 ]
 
 olt_snmp = [ Snmp(ip,'private_set') for ip in ips ]
-print(olt_snmp)
+print(olt_snmp[0].walk(''))
