@@ -116,6 +116,7 @@ class Snmp:
         for name, val in vals:
             print(val.prettyPrint())
         return success
+        
     def set_delete_user(self,serial):
         st=''
         r=[]

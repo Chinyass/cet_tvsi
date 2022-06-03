@@ -31,6 +31,7 @@ class LTP:
                     'VOIP_ENABLE' : self.get_ont_voip_enable(dec_serial),
                     'VOIP_NUMBER' : self.get_ont_voip_number(dec_serial),
                     'VOIP_PASSWORD' : self.get_ont_voip_password(dec_serial),
+                    'TEMPLATES' : self.get_ont_all_templates(),
                     'error' : '',
                 }
             else:
@@ -42,6 +43,16 @@ class LTP:
             return {
                 'error': 'ont offline'
             }
+    
+    def set_olt_save(self):
+        return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.1.50.0',1)
+    
+    def set_ont_reconfigurate(self,dec_serial):
+        return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.15.1.16.8',1)
+
+    def set_ont_delete_user(self,dec_serial):
+        data = self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.15.1.20.8.{dec_serial}',1)
+        return data
 
     def get_ont_voip_password(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.6.8.{dec_serial}')
@@ -49,6 +60,12 @@ class LTP:
             return ''
         else:
             return data
+
+    def get_ont_voip_server(self,dec_serial):
+        return self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.10.8.{dec_serial}')
+    
+    def set_ont_voip_server(self,dec_serial,value):
+        return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.10.8.{dec_serial}',value)
 
     def set_ont_voip_password(self,dec_serial,value):
         return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.6.8.{dec_serial}',value)
@@ -72,6 +89,7 @@ class LTP:
     def set_ont_voip_enable(self,dec_serial,value):
         return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.4.8.{dec_serial}',value)
 
+
     def get_ont_acs_profile(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.3.8.{dec_serial}')
         if data == 'NOSUCHOBJECT':
@@ -80,7 +98,7 @@ class LTP:
             return data
     
     def set_ont_acs_profile(self,dec_serial,value):
-        return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.15.1.3.8.{dec_serial}',value)
+        return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.3.8.{dec_serial}',value)
 
     def get_ont_template(self,dec_serial):
         id = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.4.1.43.1.8.{dec_serial}')
@@ -90,6 +108,14 @@ class LTP:
         else:
             return data
     
+    def get_ont_all_templates(self):
+        data = self.snmp.walk_index_value('1.3.6.1.4.1.35265.1.22.3.24.1.1.2')
+        dict_data = {}
+        for t in data:
+            dict_data[t[0]] = t[1]
+        
+        return dict_data
+
     def set_ont_template(self,dec_serial,value):
         return self.snmp.set_unsigned(f'.1.3.6.1.4.1.35265.1.22.3.24.1.1.2.{id}')
 
@@ -187,4 +213,5 @@ class LTP:
     
     
 if __name__ == '__main__':
-    l = LTP('10.3.0.26','private_set')
+    l = LTP('10.3.0.35','private_set')
+    print(l.get_list_ont_templates())
