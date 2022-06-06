@@ -1,10 +1,18 @@
-const io = require("socket.io")(3000,{
-    cors: {
-        origin: "*",
-    }
-})
+const cors = require('cors')
+const express = require('express')
+const app = express()
+const http = require('http').createServer(app)
 
-//const mySnmp = require('./mySnmp')
+const corsOptions ={
+    origin:'http://localhost:8080', 
+    credentials:true,
+    optionSuccessStatus:200
+}
+app.use( cors(corsOptions) )
+
+const io = require("socket.io")(http)
+
+const mySnmp = require('./mySnmp')
 let rooms = []
 
 io.on('connection', (socket) => {
@@ -90,3 +98,8 @@ setInterval(() => {
         io.to(room.serial).emit("send-traffic",rx)
     })    
 },2000)
+
+
+http.listen(8002, () => {
+    console.log('socket io server started 8100 port')
+})
