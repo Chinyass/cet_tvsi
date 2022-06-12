@@ -1,9 +1,13 @@
-from easysnmp import Session
+#from easysnmp import Session
 from typing import Tuple
 import pysnmp.hlapi as pysnmp
 from pysnmp.proto import rfc1902
 import time
 
+class Session:
+    def __init__(hostname,community,version):
+        pass
+    
 class Snmp:
     def __init__(self,ip,community):
         self.session = Session(hostname=ip,community=community,version=2)

@@ -3,14 +3,11 @@ const express = require('express')
 const app = express()
 const http = require('http').createServer(app)
 
-const corsOptions ={
-    origin:'http://localhost:8080', 
-    credentials:true,
-    optionSuccessStatus:200
-}
-app.use( cors(corsOptions) )
-
-const io = require("socket.io")(http)
+const io = require("socket.io")(http, {
+    cors: {
+      origin: "*",
+    }
+  });
 
 const mySnmp = require('./mySnmp')
 let rooms = []
@@ -74,8 +71,13 @@ function convert_hex_to_dec(hexserial){
     return arrhexserial.map( el => parseInt(el, 16) ).join('.')
 }
 
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
 setInterval(() => {
     rooms = rooms.filter( el => {
+        el.users = [...new Set(el.users)]
         return el.users.length > 0 
     })
     rooms.forEach( async (room) => {
@@ -94,12 +96,12 @@ setInterval(() => {
         const endtime = Math.ceil(Date.now() / 1000)
         rx = parseInt( ( ( parseInt(new_data) - parseInt(old_data) ) /  ( endtime - starttime  ) ) * 8 )
         */
-        let rx = 10
-        io.to(room.serial).emit("send-traffic",rx)
+        let rx = getRandomArbitrary(0,Math.pow(10,7))
+        io.to(room.serial).emit("send_traffic",rx)
     })    
 },2000)
 
 
 http.listen(8002, () => {
-    console.log('socket io server started 8100 port')
+    console.log('socket io server started 8002 port')
 })
