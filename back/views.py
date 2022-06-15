@@ -35,6 +35,28 @@ def find_ont(request):
         return JsonResponse(errors,safe=False)
 
 @csrf_exempt
+def find_by_user(request):
+    if request.method == 'POST':
+        res = json.loads(request.body)
+        user = res['user']
+        ips = res['ips']
+        errors = []
+        if user:
+            for ip in ips:
+                ltp = LTP(ip,'private_set')
+                user_info = ltp.find_ont_by_user(user)
+                if user_info:
+                    user_info['ip'] = ip
+                    return JsonResponse([user_info],safe=False)
+                else:
+                    user_info['ip'] = ip
+                    errors.append(user_info)
+            
+            return JsonResponse(errors,safe=False)
+        else:
+            return JsonResponse({'error': 'Null request'})
+
+@csrf_exempt
 def setting_ont(request):
     if request.method == 'POST':
         res = json.loads(request.body)
@@ -47,7 +69,12 @@ def setting_ont(request):
         set_acs_login = (False,)
         set_acs_password = (False,)
         if res['acs_login']:
-            delete_user = ltp.set_ont_delete_user(dec_serial)
+            all_users = ltp.get_ont_acs_user_all()
+            user_exists = tuple(filter(lambda x: x[1] == res['acs_login'],all_users))
+            if user_exists:
+                delete_user = ltp.set_ont_delete_user(user_exists[0][0])
+
+            print('DELETE USER',delete_user)
             set_acs_user = ltp.set_ont_acs_user(dec_serial,res['acs_login'])
             set_acs_login = ltp.set_ont_acs_login(dec_serial,res['acs_login'])
             set_acs_password = ltp.set_ont_acs_password(dec_serial,res['acs_password'])
@@ -77,6 +104,7 @@ def setting_ont(request):
         set_template = (False,)
         if res['template_change']:
             set_template = ltp.set_ont_template(dec_serial,res['template'])
+            print(set_template)
         
         set_reconf = ltp.set_ont_reconfigurate(dec_serial)
 
@@ -96,3 +124,4 @@ def setting_ont(request):
         }
         print('JDATA',jdata)
         return JsonResponse(jdata)
+

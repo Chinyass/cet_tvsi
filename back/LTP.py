@@ -8,6 +8,15 @@ class LTP:
         for i in range(0, len(lst), n):
             yield lst[i : i + n]
     
+    def find_ont_by_user(self,user):
+        users_list = self.get_ont_acs_user_all()
+        user_info = tuple(filter(lambda x: x[1] == user,users_list))
+        if user_info:
+            dec_serial = user_info[0][0]
+            return self.get_ont_all(dec_serial)
+        else:
+            return False
+
     def find_ont(self,hex_serial):
         dec_serial = self.convert_hex_serial_to_dec(hex_serial)
         return self.get_ont_all(dec_serial)
@@ -15,6 +24,8 @@ class LTP:
     def get_ont_all(self,dec_serial):
         if self.is_ont_online(dec_serial):
             if self.is_ont_activated(dec_serial):
+                rx = self.get_ont_optical_rx(dec_serial)
+                tx = self.get_ont_optical_tx(dec_serial)
                 return {
                     'SERIAL' : self.get_ont_serial(dec_serial),
                     'PORT' : self.get_ont_port(dec_serial),
@@ -22,8 +33,8 @@ class LTP:
                     'MODEL' : self.get_ont_model(dec_serial),
                     'FIRMWARE' : self.get_ont_firmware(dec_serial),
                     'TEMPLATE' : self.get_ont_template(dec_serial),
-                    'OPTICAL_RX' : self.get_ont_optical_rx(dec_serial),
-                    'OPTICAL_TX' : self.get_ont_optical_tx(dec_serial),
+                    'OPTICAL_RX' : 0 if 'no' in rx else rx,
+                    'OPTICAL_TX' : 0 if 'no' in tx else tx,
                     'USER' : self.get_ont_acs_user(dec_serial),
                     'LOGIN' : self.get_ont_acs_login(dec_serial),
                     'PASSWORD' : self.get_ont_acs_password(dec_serial),
@@ -117,7 +128,7 @@ class LTP:
         return dict_data
 
     def set_ont_template(self,dec_serial,value):
-        return self.snmp.set_unsigned(f'.1.3.6.1.4.1.35265.1.22.3.24.1.1.2.{id}')
+        return self.snmp.set_unsigned(f'.1.3.6.1.4.1.35265.1.22.3.4.1.43.1.8.{dec_serial}',int(value))
 
     def get_ont_acs_password(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.12.8.{dec_serial}')
@@ -139,6 +150,10 @@ class LTP:
     
     def set_ont_acs_login(self,dec_serial,value):
         return self.snmp.set_string(f'1.3.6.1.4.1.35265.1.22.3.15.1.11.8.{dec_serial}',value)
+
+    def get_ont_acs_user_all(self):
+        data = self.snmp.walk_oid_value(f'1.3.6.1.4.1.35265.1.22.3.15.1.2.8')
+        return list(map(lambda x: ( '.'.join(x[0].split('.')[-8:]), x[1]),data))
 
     def get_ont_acs_user(self,dec_serial):
         data = self.snmp.get(f'1.3.6.1.4.1.35265.1.22.3.15.1.2.8.{dec_serial}')
@@ -214,4 +229,4 @@ class LTP:
     
 if __name__ == '__main__':
     l = LTP('10.3.0.35','private_set')
-    print(l.get_list_ont_templates())
+    print(l.find_ont_by_user('22_cet_test'))

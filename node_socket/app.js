@@ -41,7 +41,8 @@ io.on('connection', (socket) => {
             })
         }
     })
-    socket.on("disconnecting", () => {
+    socket.on("disconnect-traffic", () => {
+        console.log('socket disconnect')
         rooms.forEach( el => {
             if (el.users.includes(socket.id) ){
                 const index = el.users.indexOf(socket.id);
@@ -80,26 +81,34 @@ setInterval(() => {
         el.users = [...new Set(el.users)]
         return el.users.length > 0 
     })
+    console.log(rooms)
     rooms.forEach( async (room) => {
         
         console.log('sending data to ',room)
-        //let snmp = new mySnmp('10.3.0.35','private_set')
-        /*
-        const dec_serial = convert_hex_to_dec(room.serial)      
-        const getRx = async () => {
-            return await snmp.get([`1.3.6.1.4.1.35265.1.22.3.3.10.1.6.1.8.${dec_serial}.1.1`])
+        let snmp = new mySnmp('10.3.0.35','private_set')
+        
+        const dec_serial = convert_hex_to_dec(room.serial)
+        let old_data = 0
+        try{
+            const getRx = async () => {
+                return await snmp.get([`1.3.6.1.4.1.35265.1.22.3.3.10.1.6.1.8.${dec_serial}.1.1`])
+            }
+            old_data = await getRx()
+            const starttime = Math.ceil(Date.now() / 1000)
+            await sleep(12000)
+            let new_data = await getRx()
+            const endtime = Math.ceil(Date.now() / 1000)
+            rx = parseInt( ( ( parseInt(new_data) - parseInt(old_data) ) /  ( endtime - starttime  ) ) * 8 )
+            
+            //let rx = getRandomArbitrary(0,Math.pow(10,7))
+            io.to(room.serial).emit("send_traffic",rx)
+        }      
+        catch (err){
+            io.to(room.serial).emit("send_traffic",0)
         }
-        let old_data = await getRx()
-        const starttime = Math.ceil(Date.now() / 1000)
-        await sleep(12000)
-        let new_data = await getRx()
-        const endtime = Math.ceil(Date.now() / 1000)
-        rx = parseInt( ( ( parseInt(new_data) - parseInt(old_data) ) /  ( endtime - starttime  ) ) * 8 )
-        */
-        let rx = getRandomArbitrary(0,Math.pow(10,7))
-        io.to(room.serial).emit("send_traffic",rx)
+        
     })    
-},2000)
+},13000)
 
 
 http.listen(8002, () => {
