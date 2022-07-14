@@ -23,7 +23,6 @@ class mySnmp{
                         if (snmp.isVarbindError (varbinds[i])) {
                             console.log(snmp.varbindError (varbinds[i]));
                         } else {
-                            //console.log(varbinds[i])
                             data.push(varbinds[i].value)
                         }
                     }

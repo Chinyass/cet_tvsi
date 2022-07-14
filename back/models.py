@@ -56,3 +56,36 @@ class OPERATIONS(models.Model):
     ont = models.ForeignKey(ONT, related_name='ont',on_delete=models.CASCADE,null=True, blank=True)
     def __str__(self):
         return f'{self.author} {self.status}'
+
+
+class Node(models.Model):
+    ip = models.GenericIPAddressField(default=None)
+    name = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    directionText = models.CharField(max_length=20,default='north')
+    def __str__(self):
+        return f'{self.name} {self.ip}'
+
+class Edge(models.Model):
+    on = models.ForeignKey(Node, related_name='on',on_delete=models.CASCADE)
+    on_port = models.IntegerField()
+    to = models.ForeignKey(Node, related_name='to',on_delete=models.CASCADE)
+    to_port = models.IntegerField()
+    def __str__(self):
+        return f'{self.on.name} {self.on_port} to {self.to.name} {self.to_port}'
+
+class Position(models.Model):
+    node = models.ForeignKey(Node,on_delete=models.CASCADE)
+    x = models.IntegerField()
+    y = models.IntegerField()
+    def __str__(self):
+        return f'{self.node.name} {self.x} {self.y}'
+
+class Node_map(models.Model):
+    name = models.CharField(max_length=100)
+    nodes = models.ManyToManyField(Node)
+    edges = models.ManyToManyField(Edge)
+    positions = models.ManyToManyField(Position)
+
+    def __str__(self):
+        return f'{self.name}'

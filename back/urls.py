@@ -6,5 +6,8 @@ urlpatterns = [
     path('ats',views.get_ats,name='ats'),
     path('find_ont',views.find_ont,name='find_ont'),
     path('setting_ont',views.setting_ont,name='setting_ont'),
-    path('find_by_user',views.find_by_user,name='find_by_user')
+    path('find_by_user',views.find_by_user,name='find_by_user'),
+    path('get_nodes',views.get_nodes,name='get_nodes'),
+    path('save_map',views.save_map,name='save_map'),
+    path('search_vlan',views.search_vlan,name='search_vlan')
 ]

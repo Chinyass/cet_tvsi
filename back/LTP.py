@@ -1,4 +1,4 @@
-from NSnmp import Snmp
+from .NSnmp import Snmp
 
 class LTP:
     def __init__(self,ip,community):

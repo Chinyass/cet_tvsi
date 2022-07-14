@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .LTP import LTP
 import back.serializer as serializer
 import json
+import back.Node as Node
 
 def index(request):
     return render(request,"back/index.html")
@@ -12,6 +13,32 @@ def index(request):
 def get_ats(request):
     if request.method == 'GET':
         return JsonResponse(serializer.get_ats(),safe=False)
+
+@csrf_exempt
+def search_vlan(request):
+    if request.method == 'POST':
+        res = json.loads(request.body)
+        ports = Node.get_ports_on_vlan(res)
+        return JsonResponse({ 'ports' : ports })
+
+@csrf_exempt
+def save_map(request):
+    if request.method == 'POST':
+        res = json.loads(request.body)
+        Node.save_map(res)
+        return JsonResponse({})
+
+@csrf_exempt
+def get_nodes(request):
+    if request.method == 'POST':
+        res = json.loads(request.body)
+        print(res)
+        map_name = res['map_name']
+        print(map_name)
+        if not map_name:
+            return JsonResponse(Node.get_all_data_on_map('Ring rayons'),safe=False)
+        else:
+            return JsonResponse(Node.get_all_data_on_map(f'{map_name}'),safe=False)
 
 @csrf_exempt
 def find_ont(request):
@@ -45,7 +72,8 @@ def find_by_user(request):
             for ip in ips:
                 ltp = LTP(ip,'private_set')
                 user_info = ltp.find_ont_by_user(user)
-                if user_info:
+                print(user_info)
+                if not user_info['error']:
                     user_info['ip'] = ip
                     return JsonResponse([user_info],safe=False)
                 else:
@@ -68,6 +96,7 @@ def setting_ont(request):
         set_acs_user = (False,)
         set_acs_login = (False,)
         set_acs_password = (False,)
+        delete_user = (False,)
         if res['acs_login']:
             all_users = ltp.get_ont_acs_user_all()
             user_exists = tuple(filter(lambda x: x[1] == res['acs_login'],all_users))

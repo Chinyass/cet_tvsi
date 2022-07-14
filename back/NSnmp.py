@@ -149,6 +149,72 @@ class Snmp:
             return (False,errorStatus)
         else:
             return (True,None)
+    
+    def set_hexValue_2oid(self,oid1,oid2,hex_vlan):
+        iterator = next(pysnmp.setCmd(
+                                pysnmp.SnmpEngine(),
+                                pysnmp.CommunityData(self.session.community),
+                                pysnmp.UdpTransportTarget( (self.session.hostname, '161') ),
+                                pysnmp.ContextData(),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid1),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid2),rfc1902.OctetString(hexValue=hex_vlan)) 
+                                ),
+        )
+
+        errorIndication, errorStatus, errorIndex, vals = iterator
+        if errorIndication:
+            return (False,errorIndication)
+        elif errorStatus:
+            return (False,errorStatus)
+        else:
+            return (True,None)
+    
+    def set_hexValue_4oid(self,oid1,oid2,fill_null,hex_vlan):
+        iterator = next(pysnmp.setCmd(
+                                pysnmp.SnmpEngine(),
+                                pysnmp.CommunityData(self.session.community),
+                                pysnmp.UdpTransportTarget( (self.session.hostname, '161') ),
+                                pysnmp.ContextData(),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid1),rfc1902.OctetString(hexValue=fill_null)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid2),rfc1902.OctetString(hexValue=fill_null)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid1),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid2),rfc1902.OctetString(hexValue=hex_vlan)) 
+                                ),
+        )
+
+        errorIndication, errorStatus, errorIndex, vals = iterator
+        if errorIndication:
+            return (False,errorIndication)
+        elif errorStatus:
+            return (False,errorStatus)
+        else:
+            return (True,None)
+    
+    def set_hexValue_8oid(self,oid1,oid2,oid3,oid4,oid5,oid6,oid7,oid8,hex_vlan):
+        iterator = next(pysnmp.setCmd(
+                                pysnmp.SnmpEngine(),
+                                pysnmp.CommunityData(self.session.community),
+                                pysnmp.UdpTransportTarget( (self.session.hostname, '161') ),
+                                pysnmp.ContextData(),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid1),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid2),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid3),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid4),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid5),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid6),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid7),rfc1902.OctetString(hexValue=hex_vlan)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid8),rfc1902.OctetString(hexValue=hex_vlan)) 
+                                ),
+        )
+
+        errorIndication, errorStatus, errorIndex, vals = iterator
+        if errorIndication:
+            return (False,errorIndication)
+        elif errorStatus:
+            return (False,errorStatus)
+        else:
+            return (True,None)
+
 
     
 
