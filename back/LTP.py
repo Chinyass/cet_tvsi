@@ -1,4 +1,4 @@
-from .NSnmp import Snmp
+from NSnmp import Snmp
 
 class LTP:
     def __init__(self,ip,community):
@@ -13,9 +13,14 @@ class LTP:
         user_info = tuple(filter(lambda x: x[1] == user,users_list))
         if user_info:
             dec_serial = user_info[0][0]
-            return self.get_ont_all(dec_serial)
+            data = self.get_ont_all(dec_serial)
+            if data['error']:
+                data['error'] = 'User found but ' + data['error']
+                return data
+            else:
+                return data
         else:
-            return False
+            return { 'error' : 'User not found' }
 
     def find_ont(self,hex_serial):
         dec_serial = self.convert_hex_serial_to_dec(hex_serial)
@@ -55,11 +60,124 @@ class LTP:
                 'error': 'ont offline'
             }
     
+    def set_port_mapping(self,dec_serial,lanip,localport,outsideport,protocol='UDP'):
+        in_external_port = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.1',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.1',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.1',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.ExternalPort',
+            outsideport,
+            '4'
+        )
+        print('in_external_port',in_external_port)
+        internal_client = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.2',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.2',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.2',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.InternalClient',
+            lanip,
+            '4'
+        )
+        print('internal_client',internal_client)
+        in_internal_port = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.3',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.3',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.3',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.InternalPort',
+            localport,
+            '4'
+        )
+        print('in_internal_port',in_internal_port)
+        mapping_descr = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.4',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.4',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.4',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.PortMappingDescription',
+            'tvsi',
+            '4'
+        )
+        print('mapping_descr',mapping_descr)
+        mapping_enable = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.5',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.5',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.5',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.PortMappingEnabled',
+            '1',
+            '4'
+        )
+        print('mapping_enable',mapping_enable)
+        mapping_protocol = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.6',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.6',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.6',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.PortMappingProtocol',
+            protocol,
+            '4'
+        )
+        print('mapping_protocol',mapping_protocol)
+        mapping_remote_host = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.7',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.7',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.7',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.RemoteHost',
+            "0.0.0.0",
+            '4'
+        )
+        print('mapping_remote_host',mapping_remote_host)
+        out_external_port = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.8',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.8',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.8',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.X_ELTEX_RU_ExternalPortEnd',
+            outsideport,
+            '4'
+        )
+        print('out_external_port',out_external_port)
+        out_internal_port = self.snmp.set_2str_1int(
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.3.8.{dec_serial}.8',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.4.8.{dec_serial}.8',
+            f'1.3.6.1.4.1.35265.1.22.3.60.1.5.8.{dec_serial}.8',
+            
+            'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.PortMapping.11.X_ELTEX_RU_InternalPortEnd',
+            localport,
+            '4'
+        )
+        print('out_internal_port',out_internal_port)
+        if all( 
+                (
+                    in_external_port[0],
+                    internal_client[0],
+                    in_internal_port[0],
+                    mapping_descr[0],
+                    mapping_enable[0],
+                    mapping_protocol[0],
+                    mapping_remote_host[0],
+                    out_external_port[0],
+                    out_internal_port[0]
+                ) 
+            ):
+            return True
+        else:
+            return False
+
+
+
     def set_olt_save(self):
         return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.1.50.0',1)
     
     def set_ont_reconfigurate(self,dec_serial):
-        return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.15.1.16.8',1)
+        return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.1.1.20.1.8.{dec_serial}',1)
+
+    def set_acs_reconfigurate(self,dec_serial):
+        return self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.15.1.16.8.{dec_serial}',1)
 
     def set_ont_delete_user(self,dec_serial):
         data = self.snmp.set_unsigned(f'1.3.6.1.4.1.35265.1.22.3.15.1.20.8.{dec_serial}',1)
@@ -229,4 +347,7 @@ class LTP:
     
 if __name__ == '__main__':
     l = LTP('10.3.0.35','private_set')
-    print(l.find_ont_by_user('22_cet_test'))
+    dec_serial = l.convert_hex_serial_to_dec('ELTX810000F4')
+    
+    print('PORT MAPPING: ',l.set_port_mapping(dec_serial,'192.168.1.4','8888','9090') )
+    print(l.set_acs_reconfigurate(dec_serial))

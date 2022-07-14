@@ -129,6 +129,26 @@ class Snmp:
             return (False,errorStatus)
         else:
             return (True,None)
+    
+    def set_2str_1int(self,oid1,oid2,oid3,value1,value2,value3):
+        iterator = next(pysnmp.setCmd(
+                                pysnmp.SnmpEngine(),
+                                pysnmp.CommunityData(self.session.community),
+                                pysnmp.UdpTransportTarget( (self.session.hostname, '161') ),
+                                pysnmp.ContextData(),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid1),rfc1902.OctetString(value1)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid2),rfc1902.OctetString(value2)),
+                                pysnmp.ObjectType(pysnmp.ObjectIdentity(oid3),rfc1902.Integer(value3)), 
+                                ),
+        )
+
+        errorIndication, errorStatus, errorIndex, vals = iterator
+        if errorIndication:
+            return (False,errorIndication)
+        elif errorStatus:
+            return (False,errorStatus)
+        else:
+            return (True,None)
 
     
 
