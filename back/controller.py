@@ -1,3 +1,5 @@
+from .Ports import SWITCHPORT
+
 class Functions:
     @staticmethod
     def convert_hex_to_bin(hex_values):
@@ -10,40 +12,10 @@ class Functions:
 class MES3324:
     def __init__(self,snmp):
         self.snmp = snmp
-        self.ports = {
-            '1' : '49',
-            '2' : '50',
-            '3' : '51',
-            '4' : '52',
-            '5' : '53',
-            '6' : '54',
-            '7' : '55',
-            '8' : '56',
-            '9' : '57',
-            '10' : '58',
-            '11' : '59',
-            '12' : '60',
-            '13' : '61',
-            '14' : '62',
-            '15' : '63',
-            '16' : '64',
-            '17' : '65',
-            '18' : '66',
-            '19' : '67',
-            '20' : '68',
-            '21' : '69',
-            '22' : '70',
-            '23' : '71',
-            '24' : '72',
-            '25' : '105',
-            '26' : '106',
-            '27' : '107',
-            '28' : '108',
-        }
-        self.convert_ports = {v:k for k, v in self.ports.items()}
+        self.ports = SWITCHPORT.get_ports_mes3324()
 
     def get_vlans_on_port(self,in_port):
-        port = self.ports[in_port]
+        port = self.ports[in_port]['index']
         vlans = []
         for i in range(1,5):
             vlans += self.get_dec_vlans( 
@@ -54,7 +26,7 @@ class MES3324:
         return vlans
     
     def set_trunk_vlans_on_port(self,port,vlans):
-        port = self.ports[port]
+        port = self.ports[port]['index']
         vlans_data_table_one = []
         vlans_data_table_two = []
         vlans_data_table_three = []
@@ -71,7 +43,7 @@ class MES3324:
              vlans_data_table_four.append(vlan)
         
         many_vlans = [vlans_data_table_one,vlans_data_table_two,vlans_data_table_three,vlans_data_table_four]
-       
+        results = []
         for n,vlans_data_table_i in enumerate(many_vlans):
           if vlans_data_table_i:
             created = self.create_vlan(vlans_data_table_i,(n+2),many=True)
@@ -81,7 +53,13 @@ class MES3324:
               new_bin_vlans = self.add_to_many_place(vlans_data_table_i,bin_vlans,(n+2))
               new_hex_vlans = self.convert_bin_to_hex(new_bin_vlans)
               if new_hex_vlans:
-                 self.snmp.set_hexValue(f'1.3.6.1.4.1.89.48.68.1.{n+1}.{port}',new_hex_vlans)
+                res = self.snmp.set_hexValue(f'1.3.6.1.4.1.89.48.68.1.{n+1}.{port}',new_hex_vlans)
+                results.append( res[0] )
+        
+        if all(results):
+            return True
+        else:
+            return False
 
     
     def create_vlan(self,vlan,num,many=False):
@@ -132,7 +110,7 @@ class MES3324:
         d = self.snmp.get(f'1.3.6.1.2.1.17.7.1.4.3.1.2.{vlan}')
         return list(
                 map(lambda x:
-                        self.convert_ports[x]
+                        [ i for i in self.ports if self.ports[i]['index'] == x][0]
                     ,
                     self.get_dec_vlans( self.convert_to_hex(d),0 )
                 )
@@ -171,7 +149,7 @@ class MES3324:
 
     def convert_bin_to_hex(self,bin_values):
        bin_values = tuple(self.chunks(bin_values,4))
-       print(list(bin_values))
+   
        return ''.join( list(map(lambda x: hex(int(x,2))[2:],bin_values)) )
     
     def delete_all_vlans(self,port):
@@ -181,7 +159,7 @@ class MES3324:
         self.snmp.set_hexValue_8oid(oids[0],oids[1],oids[2],oids[3],oids[4],oids[5],oids[6],oids[7],'0'*256)
 
     def set_access_vlan_on_port(self,port,dec_vlan):
-        port = self.ports[port]
+        port = self.ports[port]['index']
         data = {
             'num':0,
             'oid':''
@@ -213,16 +191,16 @@ class MES3324:
             new_bin_vlans = self.add_to_place(dec_vlan,bin_vlans,data['num']+2)
             new_hex_vlans = self.convert_bin_to_hex(new_bin_vlans)
             if new_hex_vlans:
-               print( self.snmp.set_hexValue_2oid(data['oid1'],data['oid2'],new_hex_vlans) )
+               res = self.snmp.set_hexValue_2oid(data['oid1'],data['oid2'],new_hex_vlans)
+               if res[0]:
+                   return True
+               else:
+                   return False
 
 class QSW2850:
     def __init__(self,snmp):
         self.snmp = snmp
-        self.ports = {}
-        for i in range(1,29):
-            self.ports[f'{i}'] = str(i)
-
-        self.convert_ports = self.ports
+        self.ports = SWITCHPORT.get_ports_qsw2850()
     
     def get_ports_on_vlan(self,vlan):
         vlan = vlan.strip()
@@ -236,7 +214,7 @@ class QSW2850:
     
     def get_vlans_on_port(self,port):
         hex_vlans = self.snmp.get_pysnmp(f'1.3.6.1.4.1.27514.100.3.2.1.20.{port}')[2:]
-        print(hex_vlans)
+      
         bin_vlans = Functions.convert_hex_to_bin(hex_vlans)
         vlans = []
         for i in range(len(bin_vlans)):
@@ -273,7 +251,7 @@ class QSW2850:
 
     def set_access_vlan_on_port(self,port,vlan):
         if self.create_vlan(vlan):
-            res = self.snmp.set_string(f'1.3.6.1.4.1.27514.100.3.2.1.20.{port}',vlan)
+            res = self.snmp.set_int(f'1.3.6.1.4.1.27514.100.3.2.1.16.{port}',vlan)
             if res[0]:
                 return True
             else:

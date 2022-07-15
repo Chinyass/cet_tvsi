@@ -1,5 +1,6 @@
 from .models import Node, Node_map, Edge, Position
 from .Switch import Switch
+from .Ports import SWITCHPORT
 
 def get_all_data_on_map(node_map):
     Map = Node_map.objects.filter(name=node_map).first()
@@ -11,6 +12,7 @@ def get_all_data_on_map(node_map):
         node_data['model'] = node.model
         node_data['directionText'] = node.directionText
         node_data['connections'] = []
+
         for edge in Map.edges.filter(on=node):
             node_data['connections'].append({
                 'on_port': edge.on_port,
@@ -29,6 +31,11 @@ def get_all_data_on_map(node_map):
                 'x' : 0,
                 'y' : 0
             }
+
+        if node_data['model'] == 'MES3324':
+            node_data['ports'] = SWITCHPORT.get_ports_mes3324()
+        elif node_data['model'] == 'QSW2850':
+            node_data['ports'] = SWITCHPORT.get_ports_qsw2850()
 
         data.append(node_data)
     
@@ -88,5 +95,18 @@ def get_ports_on_vlan(data):
     print(ip,vlan)
     sw = Switch(ip,community='private_set')
     return sw.get_ports_on_vlan(vlan)
-    
 
+def add_access_vlan(data):
+    ip = data['ip']
+    vlan = data['vlan']
+    port = data['port']
+    sw = Switch(ip,community='private_set')
+    return sw.set_access_vlan_on_port(port,vlan)
+
+def add_trunk_vlans(data):
+    ip = data['ip']
+    vlans = data['vlan'].split(',')
+    port = data['port']
+    print(vlans,port)
+    sw = Switch(ip,community='private_set')
+    return sw.set_trunk_vlans_on_port(port,vlans)

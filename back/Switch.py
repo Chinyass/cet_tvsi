@@ -72,6 +72,6 @@ class Switch:
 
 
 if __name__ == '__main__':
-    sw = Switch('10.3.0.27','private_set','testo')
-    #print(sw.set_access_vlan_on_port('12','45'))
+    sw = Switch('10.3.0.27','private_set')
+    print(sw.set_access_vlan_on_port('2','555'))
     

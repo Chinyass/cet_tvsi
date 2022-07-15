@@ -15,6 +15,22 @@ def get_ats(request):
         return JsonResponse(serializer.get_ats(),safe=False)
 
 @csrf_exempt
+def add_trunk_vlans(request):
+    if request.method == 'POST':
+        res = json.loads(request.body)
+        print(res)
+        status = Node.add_trunk_vlans(res)
+        return JsonResponse({ 'status' : status })
+
+@csrf_exempt
+def add_access_vlan(request):
+    if request.method == 'POST':
+        res = json.loads(request.body)
+        print(res)
+        status = Node.add_access_vlan(res)
+        return JsonResponse({ 'status' : status })
+
+@csrf_exempt
 def search_vlan(request):
     if request.method == 'POST':
         res = json.loads(request.body)
